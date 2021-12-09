@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "LongList",
+  "aliases": ["LinkedLongs"],
+  "fields" : [
+    {"name": "value", "type": "long"},
+    {"name": "next", "type": ["LongList", "null"]}
+  ]
+}
+

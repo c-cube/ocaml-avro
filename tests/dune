@@ -1,0 +1,23 @@
+
+(rule
+  (alias runtest)
+  (deps llist.json)
+  (action (run ./bin/parse_print_parse.exe %{deps})))
+
+
+(rule
+  (alias runtest)
+  (deps cards.json)
+  (action (run ./bin/parse_print_parse.exe %{deps})))
+
+
+(rule
+  (alias runtest)
+  (deps avro_file_header.json)
+  (action (run ./bin/parse_print_parse.exe %{deps})))
+
+
+(rule
+  (alias runtest)
+  (deps records.json)
+  (action (run ./bin/parse_print_parse.exe %{deps})))
