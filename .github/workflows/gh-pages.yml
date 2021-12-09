@@ -26,7 +26,7 @@ jobs:
         run: opam pin -n .
 
       - name: Depext
-        run: opam depext -yt avro
+        run: opam depext -yt avro avro-compiler
 
       - name: Deps
         run: opam install -d . --deps-only
