@@ -17,5 +17,4 @@
   (depends
     (dune (>= 2.0))
     (ocaml (>= 4.08.0))
-    (avro (= :version))
     (yojson (>= 1.6))))

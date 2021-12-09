@@ -3,5 +3,11 @@
  (libraries zip)
  (public_name avro))
 
+(rule
+  (targets obj_container_header.ml)
+  (deps obj_container_header.json)
+  (mode promote)
+  (action (run ./compiler/main.exe %{deps} -o %{targets})))
+
 (env
   (_ (flags :standard -warn-error -a+8 -strict-sequence -safe-string)))
