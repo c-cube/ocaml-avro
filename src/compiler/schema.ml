@@ -89,7 +89,7 @@ let rec to_json (self:t) : J.t =
       ])
   | Record { name; doc; fields; namespace; aliases; } ->
     `Assoc (Util.list_keep_some [
-        Some ("type", `String "enum");
+        Some ("type", `String "record");
         Some ("name", `String name);
         Some ("fields", `List (List.map json_of_field fields));
         Util.map_opt doc ~f:(fun s -> "type", `String s);
@@ -130,7 +130,7 @@ let of_json (j:J.t) : (t, string) result =
     | `List l -> Union (List.map loop l)
     | `Assoc l ->
       begin try
-          begin match assoc "type" l |> J.to_string with
+          begin match assoc "type" l |> JU.to_string with
             | "array" ->
               let items = assoc "items" l |> loop in
               Array items
@@ -140,25 +140,25 @@ let of_json (j:J.t) : (t, string) result =
               Str_map values
 
             | "fixed" ->
-              let name = assoc "name" l |> J.to_string in
+              let name = assoc "name" l |> JU.to_string in
               let namespace = None in (* TODO *)
-              let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:J.to_string in (* TODO *)
+              let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:JU.to_string in (* TODO *)
               let size = assoc "size" l |> JU.to_int in
               Fixed {name; doc; namespace; size}
 
             | "record" ->
-              let name = assoc "name" l |> J.to_string in
+              let name = assoc "name" l |> JU.to_string in
               let namespace = None in (* TODO *)
               let aliases = None in (* TODO *)
-              let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:J.to_string in (* TODO *)
+              let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:JU.to_string in (* TODO *)
               let fields = assoc "fields" l |> JU.to_list |> List.map loop_field in
               Record {name; namespace; doc; fields; aliases }
 
             | "enum" ->
-              let name = assoc "name" l |> J.to_string in
+              let name = assoc "name" l |> JU.to_string in
               let namespace = None in (* TODO *)
               let aliases = None in (* TODO *)
-              let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:J.to_string in (* TODO *)
+              let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:JU.to_string in (* TODO *)
               let symbols = assoc "symbols" l |> JU.to_list |> List.map JU.to_string in
               Enum {name; namespace; doc; aliases; symbols }
 
@@ -171,15 +171,17 @@ let of_json (j:J.t) : (t, string) result =
 
   and loop_field j : record_field =
     let l = JU.to_assoc j in
-    let name = assoc "name" l |> J.to_string in
+    let name = assoc "name" l |> JU.to_string in
     let ty = assoc "type" l |> loop in
-    let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:J.to_string in (* TODO *)
+    let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:JU.to_string in (* TODO *)
     { name; ty; doc; }
   in
   try Ok (loop j)
   with E e -> Error e
 
 let pp out (self:t) = J.pretty_print out (to_json self)
+
+let to_string (self:t) : string = J.to_string (to_json self)
 
 let parse_string (str:string) : (t, string) result =
   match J.from_string str with

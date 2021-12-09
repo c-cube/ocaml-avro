@@ -5,10 +5,6 @@
 
 module Input = Input
 
-type 'a deser = Input.t -> 'a
-(** A deserializer for values of type ['a].
-    This is used by code-generation. *)
-
 (**/**)
 module Zip_helper = Zip_helper
 (**/**)

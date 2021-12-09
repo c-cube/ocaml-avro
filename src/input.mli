@@ -33,3 +33,6 @@ val read_string_of_len : t -> int -> string
 val read_float32 : t -> float
 
 val read_float64 : t -> float
+
+val read_string : t -> string
+(** Read length-prefixed string *)

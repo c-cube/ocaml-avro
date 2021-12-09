@@ -1,3 +1,4 @@
+open Avro_compiler_lib
 
 let spf = Printf.sprintf
 
@@ -7,9 +8,9 @@ let out_file_ = ref ""
 let compile (file:string) : unit =
   let schema = match Schema.parse_file file with
     | Ok s -> s
-    | Error e -> failwith (spf "cannot compile '%s':\n%s" file e)
+    | Error e -> Printf.printf "cannot compile '%s':\n%s" file e; exit 1
   in
-  Format.printf "schema: %a@." Schema.pp schema;
+  if !debug_ then Format.printf "schema: %a@." Schema.pp schema;
   assert false
 
 let () =

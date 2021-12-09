@@ -1,0 +1,5 @@
+
+(executable
+  (name parse_print_parse)
+  (flags :standard -warn-error -a)
+  (libraries avro avro-compiler.lib))
