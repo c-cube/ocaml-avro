@@ -7,7 +7,7 @@
   (synopsis "Runtime library for encoding/decoding Avro")
   (depends
     (dune (>= 2.0))
-    (odoc :doc)
+    (odoc :with-doc)
     (ocaml (>= 4.08.0))
     camlzip))
 
@@ -17,4 +17,5 @@
   (depends
     (dune (>= 2.0))
     (ocaml (>= 4.08.0))
+    (odoc :with-doc)
     (yojson (>= 1.6))))
