@@ -6,4 +6,15 @@
   (name avro)
   (synopsis "Runtime library for encoding/decoding Avro")
   (depends
-    (ocaml (>= 4.08.0))))
+    (dune (>= 2.0))
+    (ocaml (>= 4.08.0))
+    camlzip))
+
+(package
+  (name avro-compiler)
+  (synopsis "Schema compiler for Avro")
+  (depends
+    (dune (>= 2.0))
+    (ocaml (>= 4.08.0))
+    (avro (= :version))
+    (yojson (>= 1.6))))

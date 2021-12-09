@@ -1,0 +1,7 @@
+
+(executable
+  (name main)
+  (libraries yojson avro)
+  (package avro-compiler)
+  (public_name avro-compiler))
+
