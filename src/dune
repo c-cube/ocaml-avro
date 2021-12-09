@@ -1,0 +1,7 @@
+(library
+ (name avro)
+ (libraries zip)
+ (public_name avro))
+
+(env
+  (_ (flags :standard -warn-error -a+8 -strict-sequence -safe-string)))
