@@ -1,7 +1,14 @@
 
 (executable
   (name main)
-  (libraries yojson avro)
+  (libraries avro-compiler.lib)
   (package avro-compiler)
+  (modules main)
   (public_name avro-compiler))
 
+
+(library
+  (name avro_compiler_lib)
+  (public_name avro-compiler.lib)
+  (libraries yojson avro)
+  (modules :standard \ main))

@@ -31,6 +31,9 @@ module Decode : sig
   val read_float32 : t -> float
 
   val read_float64 : t -> float
+
+  val read_string : t -> string
+  (** Read length-prefixed string *)
 end = struct
   module type S = sig
     val small_buf8 : bytes
