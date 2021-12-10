@@ -64,14 +64,6 @@ type lprinter = Format.formatter -> unit
 let lstr s out = pstr out s
 let opt_or default = function None -> default | Some x -> x
 
-type local_state = {
-  gen_name: unit -> string;
-  ty_name: string;
-  names_for_self: string list;
-  read_name: string;
-  root: bool;
-}
-
 (** Traverse type, in the context of the toplevel declaration of [ty_name]. *)
 let rec gen_rec ~root ~is_rec ~names_for_self ~ty_name ~read_name ~gen_name
     (self:state) ty : lprinter * lprinter =

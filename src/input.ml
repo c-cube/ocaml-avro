@@ -37,10 +37,10 @@ let of_chan ic : t =
   let iobuf = Iobuf.Pool.alloc bufpool in
 
   let[@inline never] refill (buf:Iobuf.t) =
-    buf.off <- 0;
     let n = input ic buf.b 0 (Iobuf.cap buf) in
     if n = 0 then raise End_of_file;
-    buf.len <- n;
+    buf.i <- 0;
+    buf.after_last <- n;
   in
 
   let[@inline] read_byte () =
@@ -53,7 +53,7 @@ let of_chan ic : t =
     if len>0 then (
       if Iobuf.len iobuf = 0 then refill iobuf;
       let len' = min len (Iobuf.len iobuf) in
-      Bytes.blit iobuf.b iobuf.off buf off len';
+      Bytes.blit iobuf.b iobuf.i buf off len';
       read_exact buf (off+len') (len-len')
     )
   in

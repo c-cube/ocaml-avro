@@ -55,7 +55,7 @@ module Decode = struct
     in
     self.codec <- codec
 
-  let make input row : _ t =
+  let make input ~read:row : _ t =
     let self = {
       input; row; is_done=false;
       codec=None;
@@ -88,3 +88,113 @@ module Decode = struct
   let to_list self = List.of_seq @@ to_seq self
   let to_array self = Array.of_seq @@ to_seq self
 end
+
+module Encode = struct
+  type 'a t = {
+    out: Output.t;
+    write: Output.t -> 'a -> unit;
+    schema: string;
+
+    pool: Iobuf.Pool.t;
+    sync_marker: string; (* len=16 *)
+
+    max_block_count: int;
+    mutable closed: bool;
+    mutable block_out: Output.t;
+    mutable block_q : Iobuf.t Queue.t;
+    mutable block_count: int;
+  }
+
+  exception Closed
+
+  let write_header_ self =
+    let magic = "Obj\x01" in
+    Output.write_string_of_len self.out 4 magic;
+    (* TODO: write meta, containing schema *)
+    (* TODO: also write codec if present *)
+    ()
+
+  let make
+      ?(max_block_count=50_000) ?(buf_size=16 * 1024) ?pool
+      out ~schema ~write : _ t =
+    let max_block_count = max 100 (min max_block_count 50_000) in
+    let buf_size = max 128 buf_size in
+    let pool = match pool with
+      | None -> Iobuf.Pool.create ~buf_size ()
+      | Some p -> p
+    in
+
+    let sync_marker =
+      let s = "syncmeup" in
+      s ^ s
+    in
+
+    (* writing blocks doesn't go directly into [out], we need
+       to be able to count bytes (for the block header), and
+       optionally to compress the whole content before writing it.
+       So we store temporary data in buffers. *)
+    let block_out, block_q = Output.of_iobufs pool in
+
+    let self = {
+      out; write; schema;
+      closed=false; pool;
+      max_block_count; sync_marker;
+      block_out; block_q; block_count=0;
+    } in
+    write_header_ self;
+    self
+
+  (* write a block to [out] *)
+  let[@inline never] flush_block_ self : unit =
+    (* TODO: apply codecs first, then compute block size *)
+
+    (* TODO: support other codecs, like deflate.
+       In this case we need to produce a new series of buffers
+       using Zip_helper (or directly Zlib), and write _that series_ out. *)
+    if true then (
+      (* codec=null *)
+      let block_size =
+        let n = ref 0 in
+        Queue.iter (fun buf -> n := !n + Iobuf.len buf) self.block_q;
+        !n
+      in
+
+      (* write block header *)
+      Output.write_int self.out self.block_count;
+      Output.write_int self.out block_size;
+      Queue.iter
+        (fun (buf:Iobuf.t) ->
+           Output.write_slice self.out buf.b buf.i (Iobuf.len buf))
+        self.block_q;
+    );
+
+    (* recycle buffers, clear state *)
+    Queue.iter (Iobuf.Pool.recycle self.pool) self.block_q;
+    Queue.clear self.block_q;
+    self.block_count <- 0;
+
+    (* terminate block *)
+    Output.write_string_of_len self.out 16 self.sync_marker;
+    Output.flush self.out
+
+  (* see, after a push, if we need to flush current block *)
+  let[@inline never] post_push_ self =
+    if self.block_count >= self.max_block_count then (
+      flush_block_ self
+    )
+
+  let cur_block_count self = self.block_count
+  let flush_block self = if self.block_count > 0 then flush_block_ self
+
+  let[@inline] push self x : unit =
+    if self.closed then raise Closed;
+    self.write self.block_out x;
+    post_push_ self
+
+  let close self =
+    if not self.closed then (
+      if self.block_count > 0 then flush_block_ self;
+      self.closed <- true;
+    )
+end
+
