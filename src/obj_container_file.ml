@@ -172,9 +172,18 @@ module Encode = struct
     );
 
     (* recycle buffers, clear state *)
-    Queue.iter (Iobuf.Pool.recycle self.pool) self.block_q;
-    Queue.clear self.block_q;
-    self.block_count <- 0;
+    begin
+      Queue.iter (Iobuf.Pool.recycle self.pool) self.block_q;
+      Queue.clear self.block_q;
+      self.block_count <- 0;
+    end;
+
+    (* create a new output *)
+    begin
+      let out, q = Output.of_iobufs self.pool in
+      self.block_out <- out;
+      self.block_q <- q;
+    end;
 
     (* terminate block *)
     Output.write_string_of_len self.out 16 self.sync_marker;
