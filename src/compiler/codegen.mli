@@ -7,3 +7,7 @@ module Code : sig
 end
 
 val gen : ?internal:bool -> Schema.t -> Code.t list
+(** Generate code for the given schema.
+    @param internal if true, will not generate [open Avro]. Only useful if
+      it's done in dune, or as part of avro itself.
+*)

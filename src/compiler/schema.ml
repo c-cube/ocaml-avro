@@ -76,7 +76,7 @@ let rec to_json (self:t) : J.t =
         Some ("type", `String "fixed");
         Some ("name", `String name);
         Some ("size", `Int size);
-        Util.map_opt doc ~f:(fun s -> "type", `String s);
+        Util.map_opt doc ~f:(fun s -> "doc", `String s);
         Util.map_opt namespace ~f:(fun s -> "namespace", `String s);
       ])
   | Enum { name; doc; symbols; namespace; aliases; } ->
@@ -84,7 +84,7 @@ let rec to_json (self:t) : J.t =
         Some ("type", `String "enum");
         Some ("name", `String name);
         Some ("symbols", `List (List.map (fun s -> `String s) symbols));
-        Util.map_opt doc ~f:(fun s -> "type", `String s);
+        Util.map_opt doc ~f:(fun s -> "doc", `String s);
         Util.map_opt namespace ~f:(fun s -> "namespace", `String s);
         Util.map_opt aliases ~f:(fun l -> "aliases", `List (List.map (fun s->`String s) l));
       ])
@@ -93,7 +93,7 @@ let rec to_json (self:t) : J.t =
         Some ("type", `String "record");
         Some ("name", `String name);
         Some ("fields", `List (List.map json_of_field fields));
-        Util.map_opt doc ~f:(fun s -> "type", `String s);
+        Util.map_opt doc ~f:(fun s -> "doc", `String s);
         Util.map_opt aliases ~f:(fun l -> "aliases", `List (List.map (fun s->`String s) l));
         Util.map_opt namespace ~f:(fun s -> "namespace", `String s);
       ])
@@ -150,7 +150,7 @@ let of_json (j:J.t) : (t, string) result =
             | "record" ->
               let name = assoc "name" l |> JU.to_string in
               let namespace = None in (* TODO *)
-              let aliases = None in (* TODO *)
+              let aliases = List.assoc_opt "aliases" l |> Util.map_opt ~f:(fun x -> JU.to_list x |> List.map JU.to_string) in
               let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:JU.to_string in (* TODO *)
               let fields = assoc "fields" l |> JU.to_list |> List.map loop_field in
               Record {name; namespace; doc; fields; aliases }
@@ -158,7 +158,7 @@ let of_json (j:J.t) : (t, string) result =
             | "enum" ->
               let name = assoc "name" l |> JU.to_string in
               let namespace = None in (* TODO *)
-              let aliases = None in (* TODO *)
+              let aliases = List.assoc_opt "aliases" l |> Util.map_opt ~f:(fun x -> JU.to_list x |> List.map JU.to_string) in
               let doc = List.assoc_opt "doc" l |> Util.map_opt ~f:JU.to_string in (* TODO *)
               let symbols = assoc "symbols" l |> JU.to_list |> List.map JU.to_string in
               Enum {name; namespace; doc; aliases; symbols }
