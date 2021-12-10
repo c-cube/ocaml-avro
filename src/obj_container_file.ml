@@ -108,10 +108,13 @@ module Encode = struct
   exception Closed
 
   let write_header_ self =
+    let module OH = Obj_container_header in
     let magic = "Obj\x01" in
     Output.write_string_of_len self.out 4 magic;
-    (* TODO: write meta, containing schema *)
     (* TODO: also write codec if present *)
+    let meta = OH.Str_map.(singleton "avro.schema" self.schema) in
+    OH.write self.out meta;
+    Output.write_string_of_len self.out 16 self.sync_marker;
     ()
 
   let make
