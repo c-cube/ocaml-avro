@@ -47,6 +47,7 @@ and record_field = {
      *)
 }
 
+(** A toplevel schema. *)
 type t = top_type
 
 let json_of_atomic (self:atomic_type) : J.t =
