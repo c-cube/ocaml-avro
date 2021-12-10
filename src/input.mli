@@ -28,6 +28,8 @@ val read_int64 : t -> int64
 
 val read_int : t -> int
 
+val read_bool : t -> bool
+
 val read_string_of_len : t -> int -> string
 
 val read_float32 : t -> float

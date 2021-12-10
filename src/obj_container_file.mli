@@ -15,6 +15,16 @@ module Decode : sig
 
   val next : 'a t -> 'a option
   (** Read next row *)
+
+  val iter : 'a t -> f:('a -> unit) -> unit
+
+  val fold : 'a t -> f:('b -> 'a -> 'b) -> init:'b -> 'b
+
+  val to_seq : 'a t -> 'a Seq.t
+
+  val to_list : 'a t -> 'a list
+
+  val to_array : 'a t -> 'a array
 end
 
 val register_decompression_codec :

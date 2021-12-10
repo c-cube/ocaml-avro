@@ -106,6 +106,10 @@ let[@inline] read_int self : int =
   let i = read_int64 self in
   Int64.to_int i
 
+let[@inline] read_bool self : bool =
+  let c = read_byte self in
+  Char.code c = 1
+
 let read_float64 (self:t) : float =
   let (module B) = self in
   read_exact self B.small_buf8 0 8;
