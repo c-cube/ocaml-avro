@@ -191,6 +191,7 @@ module Encode = struct
 
   let[@inline] push self x : unit =
     if self.closed then raise Closed;
+    self.block_count <- 1 + self.block_count;
     self.write self.block_out x;
     post_push_ self
 
