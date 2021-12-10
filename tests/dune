@@ -21,3 +21,16 @@
   (alias runtest)
   (deps records.json)
   (action (run ./bin/parse_print_parse.exe %{deps})))
+
+(rule
+  (targets records.ml)
+  (deps records.json)
+  (action (run ../src/compiler/main.exe %{deps} -o %{targets})))
+
+(executable
+  (name records_test)
+  (modules records_test records)
+  (libraries avro))
+
+(env
+  (_ (flags :standard -warn-error -a)))
