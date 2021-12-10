@@ -63,7 +63,7 @@ module Decode = struct
       block_remaining_count=0;
     } in
     read_header_ self;
-    assert false
+    self
 
   let cur_block_remaining_count self = self.block_remaining_count
 

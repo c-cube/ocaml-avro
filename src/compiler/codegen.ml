@@ -2,7 +2,6 @@
 module Sc = Schema
 
 let spf = Printf.sprintf
-let aspf = Format.asprintf
 let fpf = Format.fprintf
 let pstr = Format.pp_print_string
 
@@ -297,7 +296,6 @@ let rec gen_rec ~root ~is_rec ~names_for_self ~ty_name ~read_name ~gen_name
     )
 
 and gen_top (self:state) ~gen_name ~read_name ~ty_name (ty:Schema.t) : unit =
-  let gen_name = mk_gen_name() in
   let is_rec = ref false in
 
   let decl, read =

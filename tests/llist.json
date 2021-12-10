@@ -2,9 +2,10 @@
   "type": "record",
   "name": "LongList",
   "aliases": ["LinkedLongs"],
+  "doc": "a list of integers",
   "fields" : [
     {"name": "value", "type": "long"},
-    {"name": "next", "type": ["LongList", "null"]}
+    {"name": "next", "type": ["LongList", "null"], "doc": "tail pointer"}
   ]
 }
 

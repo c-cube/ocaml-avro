@@ -2,7 +2,9 @@
 
 module Str_map = Map.Make(String)
 
-type t = string Str_map.t
+let schema = "{\"type\":\"map\",\"values\":\"bytes\"}"
+
+type nonrec t = string Str_map.t
 
 let read (input:Input.t) : t =
   (let len = Input.read_int input in
