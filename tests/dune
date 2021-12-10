@@ -32,5 +32,22 @@
   (modules records_test records)
   (libraries avro))
 
+(rule
+  (targets records_hash)
+  (action
+    (progn
+      (setenv
+        "N" "100_000"
+        (setenv
+          "OUT" "tmp.data"
+          (run ./records_test.exe)))
+      (with-stdout-to %{targets}
+                      (run sha256sum "tmp.data")))))
+
+(rule
+  (alias runtest)
+  (deps records_hash)
+  (action (diff records_hash.expected records_hash)))
+
 (env
   (_ (flags :standard -warn-error -a)))
