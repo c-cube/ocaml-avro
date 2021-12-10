@@ -85,7 +85,7 @@ let of_iobufs (pool:Iobuf.Pool.t) : t * _ Queue.t =
       if Iobuf.write_cap !cur = 0 then flush_buf();
       let len' = min len (Iobuf.write_cap !cur) in
       assert (len'>0);
-      Iobuf.write_slice !cur b i len;
+      Iobuf.write_slice !cur b i len';
       write_slice b (i+len') (len-len')
     )
   in
