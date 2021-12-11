@@ -65,6 +65,8 @@ module Decode = struct
   }
 
   let read_header_ self : unit =
+    Tracy.with_ ~file:__FILE__ ~line:__LINE__ ~name:"read-header" () @@ fun _sp ->
+
     (* read magic number *)
     let magic = Bytes.make 4 '\x00' in
     Input.read_exact self.input magic 0 4;
@@ -103,6 +105,7 @@ module Decode = struct
 
   (* fetch next block *)
   let next_block_ self : unit =
+    Tracy.with_ ~file:__FILE__ ~line:__LINE__ ~name:"next-block" () @@ fun _sp ->
 
     (* read previous' block's sync marker, if we already parsed a block before *)
     if self.first_block then (
@@ -117,6 +120,8 @@ module Decode = struct
     (* read count+size. This is where we might encounter End_of_file *)
     begin match Input.read_int self.input with
       | count ->
+        Tracy.add_text_f _sp (fun k->k"blkcnt %d" count);
+
         self.block_remaining_count <- count;
         let byte_size = Input.read_int self.input in
 
@@ -207,6 +212,7 @@ module Encode = struct
   exception Closed
 
   let write_header_ self =
+    Tracy.with_ ~file:__FILE__ ~line:__LINE__ ~name:"write-header" () @@ fun _sp ->
     let module OH = Obj_container_header in
     let magic = "Obj\x01" in
     Output.write_string_of_len self.out 4 magic;
@@ -249,6 +255,9 @@ module Encode = struct
 
   (* write a block to [out] *)
   let[@inline never] flush_block_ self : unit =
+    Tracy.with_ ~file:__FILE__ ~line:__LINE__ ~name:"flush-block" () @@ fun _sp ->
+    Tracy.add_text_f _sp (fun k->k"blkcnt %d" self.block_count);
+    Tracy.add_value _sp (Int64.of_int self.block_count);
 
     if Codec.is_null_ self.codec then (
       (* codec=null *)
@@ -272,6 +281,8 @@ module Encode = struct
       (* TODO: streaming compression, reusing buffers *)
       let compressed = self.codec.Codec.compress content in
       let block_size = String.length compressed in
+      Tracy.add_text_f _sp (fun k->k"byte_size %d" block_size);
+      Tracy.add_value _sp (Int64.of_int block_size);
 
       (* write block header *)
       Output.write_int self.out self.block_count;

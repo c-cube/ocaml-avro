@@ -1,6 +1,6 @@
 (library
  (name avro)
- (libraries zip)
+ (libraries zip tracy)
  (public_name avro))
 
 (rule
