@@ -8,7 +8,10 @@ let () =
   let out = Avro.Output.of_buffer buf in
 
   let codec_name = (try Sys.getenv "CODEC" with _ -> "deflate") in
+  let blockcnt = (try Sys.getenv "BLOCKSIZE" |> int_of_string  with _ -> 50_000) in
   let n = (try Sys.getenv "N" |> int_of_string with _ -> 1_000_000) in
+
+  Printf.printf "codec: %s, max_block_count: %d, n: %d\n" codec_name blockcnt (2*n);
 
   Avro.Obj_container_file.(Encode.(
       Tracy.with_ ~file:__FILE__ ~line:__LINE__ ~name:"enc" () @@ fun _sp ->
@@ -16,7 +19,7 @@ let () =
         try Codec.find_by_name_exn codec_name
         with Not_found -> failwith "unknown codec"
       in
-      let enc = make out ~max_block_count:500 ~codec ~write:E.write ~schema:E.schema in
+      let enc = make out ~max_block_count:blockcnt ~codec ~write:E.write ~schema:E.schema in
 
       let langs = [|E.Cpp; E.Ocaml; E.Java; E.Python|] in
       for i=1 to n do
