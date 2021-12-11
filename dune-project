@@ -13,6 +13,7 @@
   (depends
     (dune (>= 2.0))
     (odoc :with-doc)
+    (avro-compiler :with-test)
     (ocaml (>= 4.08.0))
     camlzip))
 
