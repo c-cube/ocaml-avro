@@ -226,7 +226,7 @@ let rec gen_rec
       fpf out
         "(@[<hv>match self with@ \
          | None -> Output.write_int out %d@ \
-         | Some self -> Output.write_bool out %d; %t@])"
+         | Some self -> Output.write_int out %d; %t@])"
         (if nullfirst then 0 else 1)
         (if nullfirst then 1 else 0)
         awrite
