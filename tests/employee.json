@@ -1,0 +1,16 @@
+{
+  "name": "employee",
+  "type": "record",
+  "fields": [
+    {"name": "firstname", "type": "string"},
+    {"name": "lastname", "type": "string"},
+    {"name": "age", "type": "int"},
+    {"name": "friendliness", "type": "float"},
+    {"name": "job", "type": [
+      {"name": "programmer", "type": "record",
+        "fields": [{"name": "language", "type": {"type":"enum", "name":"language","symbols": ["cpp", "ocaml", "java", "python"]}}]},
+      {"name": "RH", "type": "record",
+        "fields": [{"name": "hair_spikiness", "type": {"type":"fixed", "size": 4, "name":"spikiness"}}]}
+    ] }
+  ]
+}

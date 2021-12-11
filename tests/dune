@@ -16,10 +16,14 @@
   (deps avro_file_header.json)
   (action (run ./bin/parse_print_parse.exe %{deps})))
 
-
 (rule
   (alias runtest)
   (deps records.json)
+  (action (run ./bin/parse_print_parse.exe %{deps})))
+
+(rule
+  (alias runtest)
+  (deps employee.json)
   (action (run ./bin/parse_print_parse.exe %{deps})))
 
 (rule
@@ -50,7 +54,6 @@
   (deps records_hash)
   (action (diff records_hash.expected records_hash)))
 
-
 (rule
   (targets records_hash_deflate)
   (locks /thash)
@@ -72,5 +75,32 @@
   (deps records_hash)
   (action (diff records_hash_deflate.expected records_hash_deflate)))
 
+(rule
+  (targets employee.ml)
+  (deps employee.json)
+  (action (run ../src/compiler/main.exe %{deps} -o %{targets})))
+
+(executable
+  (name employee_test)
+  (modules employee_test employee)
+  (libraries avro))
+
+(rule
+  (targets employee_test.out)
+  (locks /thash)
+  (action
+    (with-stdout-to
+      %{targets}
+      (setenv
+        "CODEC" "deflate"
+        (setenv
+          "N" "1_000_000"
+          (run ./employee_test.exe))))))
+
+(rule
+  (alias runtest)
+  (action (diff employee_test.expected employee_test.out)))
+
 (env
   (_ (flags :standard -warn-error -a)))
+
