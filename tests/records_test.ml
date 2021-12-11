@@ -9,7 +9,7 @@ let () =
 
   Avro.Obj_container_file.Encode.(
     let enc = make out ~max_block_count:500 ~write:R.write ~schema:R.schema in
-    for i=0 to n do
+    for i=1 to n do
       push enc {R.a=Int64.of_int i; b="foo_"^string_of_int i}
     done;
     close enc

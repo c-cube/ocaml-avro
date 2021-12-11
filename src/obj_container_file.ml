@@ -21,6 +21,8 @@ module Decode = struct
   type 'a t = {
     input: Input.t;
     row: (Input.t -> 'a);
+    mutable sync_marker: string; (* len=16 *)
+    mutable first_block: bool;
     mutable is_done: bool;
 
     mutable codec: (string -> string) option; (* decompression *)
@@ -33,7 +35,7 @@ module Decode = struct
     (** How many items in the current block. *)
   }
 
-  let read_header_ self =
+  let read_header_ self : unit =
     (* read magic number *)
     let magic = Bytes.make 4 '\x00' in
     Input.read_exact self.input magic 0 4;
@@ -53,22 +55,76 @@ module Decode = struct
           | None -> failwith (spf "unknown codec %S" name)
         end
     in
-    self.codec <- codec
+    self.codec <- codec;
+    (* read sync marker *)
+    self.sync_marker <- Input.read_string_of_len self.input 16;
+    ()
 
   let make input ~read:row : _ t =
     let self = {
-      input; row; is_done=false;
+      input; row; first_block=true; is_done=false;
       codec=None;
-      block_input=input;
+      block_input=input; sync_marker="";
       block_remaining_count=0;
     } in
     read_header_ self;
     self
 
-  let cur_block_remaining_count self = self.block_remaining_count
+  let[@inline] cur_block_remaining_count self = self.block_remaining_count
 
-  let next self =
-    None (* TODO *)
+  (* fetch next block *)
+  let next_block_ self : unit =
+
+    (* read previous' block's sync marker, if we already parsed a block before *)
+    if self.first_block then (
+      self.first_block <- false;
+    ) else (
+      let syncm = Input.read_string_of_len self.input 16 in
+      if syncm <> self.sync_marker then (
+        failwith (spf "expected sync marker %S, got %S" self.sync_marker syncm);
+      );
+    );
+
+    (* read count+size. This is where we might encounter End_of_file *)
+    begin match Input.read_int self.input with
+      | count ->
+        self.block_remaining_count <- count;
+        let byte_size = Input.read_int self.input in
+
+        (* obtain an input for the block's data *)
+        self.block_input <-
+          begin match self.codec with
+            | None -> self.input
+            | Some codec_decomp ->
+              (* TODO: streaming decode? *)
+              (* read [byte_size] into a string and decompress it to obtain the input *)
+              let buf = Bytes.make byte_size '\x00' in
+              Input.read_exact self.input buf 0 byte_size;
+              let decompressed = codec_decomp (Bytes.unsafe_to_string buf) in
+              Input.of_string decompressed
+          end;
+        ()
+
+      | exception End_of_file ->
+        (* no other block *)
+        self.is_done <- true;
+    end
+
+  (* read next row *)
+  let rec next_ self =
+    if self.is_done then None
+    else if self.block_remaining_count = 0 then (
+      (* read next block and try again from it *)
+      next_block_ self;
+      (next_ [@tailcall]) self
+    ) else (
+      let r = self.row self.block_input in
+      self.block_remaining_count <- self.block_remaining_count - 1;
+      Some r
+    )
+
+  let[@inline] next self =
+    if self.is_done then None else next_ self
 
   let rec to_seq self () =
     match next self with
