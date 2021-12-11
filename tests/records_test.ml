@@ -2,21 +2,28 @@
 module R = Records
 
 let () =
+  Printexc.record_backtrace true;
   let buf = Buffer.create 125 in
   let out = Avro.Output.of_buffer buf in
 
+  let codec_name = (try Sys.getenv "CODEC" with _ -> "null") in
   let n = (try Sys.getenv "N" |> int_of_string with _ -> 50_000) in
 
-  Avro.Obj_container_file.Encode.(
-    let enc = make out ~max_block_count:500 ~write:R.write ~schema:R.schema in
+  Avro.Obj_container_file.(Encode.(
+      let codec =
+        try Codec.find_by_name_exn codec_name
+        with Not_found -> failwith "unknown codec"
+      in
+    let enc = make out ~max_block_count:500 ~codec ~write:R.write ~schema:R.schema in
     for i=1 to n do
       push enc {R.a=Int64.of_int i; b="foo_"^string_of_int i}
     done;
     close enc
-  );
+  ));
   let str = Buffer.contents buf in
 
-  Printf.printf "output for %d items: size=%d bytes\n" n (String.length str);
+  Printf.printf "output for %d items: size=%d bytes (codec %S)\n"
+    n (String.length str) codec_name;
 
   begin match Sys.getenv_opt "OUT" with
      | None -> ()

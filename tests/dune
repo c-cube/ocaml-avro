@@ -34,6 +34,7 @@
 
 (rule
   (targets records_hash)
+  (locks /thash)
   (action
     (progn
       (setenv
@@ -48,6 +49,28 @@
   (alias runtest)
   (deps records_hash)
   (action (diff records_hash.expected records_hash)))
+
+
+(rule
+  (targets records_hash_deflate)
+  (locks /thash)
+  (action
+    (progn
+      (setenv
+        "CODEC" "deflate"
+        (setenv
+          "N" "100_000"
+          (setenv
+            "OUT" "tmp.data"
+            (run ./records_test.exe))))
+      (with-stdout-to %{targets}
+                      (run sha256sum "tmp.data")))))
+
+
+(rule
+  (alias runtest)
+  (deps records_hash)
+  (action (diff records_hash_deflate.expected records_hash_deflate)))
 
 (env
   (_ (flags :standard -warn-error -a)))
