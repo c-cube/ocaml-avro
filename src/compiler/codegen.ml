@@ -200,12 +200,13 @@ let rec gen_rec
 
     ) else (
       (* generate a type decl and refer to it *)
+      let ty_name = String.uncapitalize_ascii name in
       let read_name' = spf "read_%s" name in
       let write_name' = spf "write_%s" name in
       gen_top self ty
-        ~gen_name ~ty_name:name ~read_name:read_name' ~write_name:write_name';
+        ~gen_name ~ty_name ~read_name:read_name' ~write_name:write_name';
 
-      lstr name,
+      lstr ty_name,
       (fun out -> fpf out "%s input" read_name'),
       (fun out -> fpf out "%s out self" write_name')
     )
@@ -303,20 +304,13 @@ let rec gen_rec
     )
 
   | Sc.Fixed { name; size; doc; namespace=_ } ->
-    if root then (
-      let ty out = pstr out name; ppdoc out doc;
-      and read out =
-        fpf out "Input.read_string_of_len %d" size
-      and write out =
-        fpf out "Output.write_string_of_len out %d self" size
-      in
-      ty, read, write
-
-    ) else (
-      lstr name,
-      (fun out -> fpf out "read_%s input" name),
-      (fun out -> fpf out "write_%s out self" name)
-    )
+    let ty out = pstr out "string"; ppdoc out doc;
+    and read out =
+      fpf out "Input.read_string_of_len input %d" size
+    and write out =
+      fpf out "Output.write_string_of_len out %d self" size
+    in
+    ty, read, write
 
   | Sc.Enum { name; doc; symbols; aliases=_; namespace=_ } ->
     if root then (
@@ -350,9 +344,17 @@ let rec gen_rec
       ty, read, write
 
     ) else (
-      let ty out = pstr out name
-      and read out = fpf out "read_%s input" name
-      and write out = fpf out "write_%s out self" name in
+      let ty_name = String.uncapitalize_ascii name in
+
+      (* declare type *)
+      let read_name' = spf "read_%s" name in
+      let write_name' = spf "write_%s" name in
+      gen_top self ty
+        ~ty_name ~read_name:read_name' ~write_name:write_name' ~gen_name;
+
+      let ty out = pstr out ty_name
+      and read out = fpf out "%s input" read_name'
+      and write out = fpf out "%s out self" write_name' in
       ty, read, write
     )
 
