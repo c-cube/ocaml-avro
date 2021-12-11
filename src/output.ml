@@ -32,7 +32,7 @@ let of_chan (oc: out_channel) : t =
 
     let[@inline] write_byte c =
       if Iobuf.write_cap buf = 0 then flush_buf();
-      Iobuf.write_char buf c
+      Iobuf.write_byte buf c
 
     let[@unroll 2] rec write_slice b i len =
       if len>0 then (
@@ -64,40 +64,17 @@ let with_file
     B.flush (); flush oc; close_out_noerr oc;
     raise e
 
-let of_iobufs (pool:Iobuf.Pool.t) : t * _ Queue.t =
-  let q = Queue.create() in
-  let cur = ref (Iobuf.Pool.alloc pool) in
-  Queue.push !cur q;
-
-  (* flushing just allocates a new buffer *)
-  let[@inline never] flush_buf () =
-    cur := Iobuf.Pool.alloc pool;
-    Queue.push !cur q;
-  in
-
-  let[@inline] write_byte c =
-    if Iobuf.write_cap !cur = 0 then flush_buf();
-    Iobuf.write_char !cur c
-  in
-
-  let[@unroll 2] rec write_slice b i len =
-    if len>0 then (
-      if Iobuf.write_cap !cur = 0 then flush_buf();
-      let len' = min len (Iobuf.write_cap !cur) in
-      assert (len'>0);
-      Iobuf.write_slice !cur b i len';
-      write_slice b (i+len') (len-len')
-    )
-  in
-
+let of_iobuf_chain (pool:Iobuf.Pool.t) : t * Iobuf.Chain.t =
+  let module IOC = Iobuf.Chain in
+  let chain = IOC.create ~pool () in
   let module M = struct
     let small_buf8 = Bytes.make 8 '\x00'
-    let write_byte = write_byte
-    let write_slice = write_slice
+    let[@inline] write_byte c = IOC.write_byte chain c
+    let[@inline] write_slice b i len = IOC.write_slice chain b i len
     let flush _ = ()
   end
   in
-  (module M), q
+  (module M), chain
 
 let[@inline] write_byte (module O:S) c = O.write_byte c
 let[@inline] flush (module O:S) = O.flush()

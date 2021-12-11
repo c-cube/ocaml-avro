@@ -15,9 +15,10 @@ val with_file :
   ?mode:int ->
   string -> (t -> 'a) -> 'a
 
-val of_iobufs : Iobuf.Pool.t -> t * Iobuf.t Queue.t
-(** [of_iobufs pool] is an output that writes to buffers allocated
-    from [pool]. It also returns a queue in which the buffers are pushed. *)
+val of_iobuf_chain : Iobuf.Pool.t -> t * Iobuf.Chain.t
+(** [of_iobuf_chain pool] is an output that writes to buffers allocated
+    from [pool]. It also returns a chain of buffers into which the content
+    is written *)
 
 val write_byte : t -> char -> unit
 (** Write a single byte. *)

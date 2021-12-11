@@ -4,6 +4,33 @@
     This format is used to store a collection of {b rows} which have
     the same type, using an efficient binary encoding. *)
 
+module Codec : sig
+  type t
+
+  val null : t
+
+  val deflate : t
+
+  val find_by_name : string -> t option
+  val find_by_name_exn : string -> t
+  (** @raise Not_found if codec is not found *)
+
+  val name : t -> string
+
+  val register :
+    name:string ->
+    compress:(string -> string) ->
+    decompress:(string -> string) ->
+    unit -> t
+  (** Register decompression codecs. Defaults are "null" and "deflate". *)
+
+  val register' :
+    name:string ->
+    compress:(string -> string) ->
+    decompress:(string -> string) ->
+    unit -> unit
+end
+
 (** Reading from an input *)
 module Decode : sig
   type 'a t
@@ -42,6 +69,7 @@ module Encode : sig
     ?max_block_count:int ->
     ?buf_size:int ->
     ?pool:Iobuf.Pool.t ->
+    ?codec:Codec.t ->
     Output.t ->
     schema:string ->
     write:(Output.t -> 'a -> unit) -> 'a t
@@ -68,7 +96,3 @@ module Encode : sig
   (** [close enc] flushes the last block, if any, and renders the encoder
       unusable. *)
 end
-
-val register_decompression_codec :
-  string -> decompress:(string -> string) -> unit
-(** Register decompression codecs. Defaults are "null" and "deflate". *)
