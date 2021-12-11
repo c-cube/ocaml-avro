@@ -2,9 +2,12 @@
 (generate_opam_files true)
 (version 0.1)
 (maintainers "Simon Cruanes")
+(license MIT)
+(source (github c-cube/ocaml-avro))
 (authors "Simon Cruanes")
 (bug_reports "https://github.com/c-cube/ocaml-avro/issues/")
 (homepage "https://github.com/c-cube/ocaml-avro")
+(name avro)
 
 
 (package

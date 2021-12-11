@@ -34,8 +34,8 @@
 (rule
   (targets records.ml)
   (deps records.json)
-  (package avro)
-  (action (run ../src/compiler/main.exe %{deps} -o %{targets})))
+  ;(package avro)
+  (action (run %{bin:avro-compiler} %{deps} -o %{targets})))
 
 (executable
   (name records_test)
@@ -82,13 +82,13 @@
 (rule
   (alias runtest)
   (deps records_hash)
+  (package avro)
   (action (diff records_hash_deflate.expected records_hash_deflate)))
 
 (rule
   (targets employee.ml)
   (deps employee.json)
-  (package avro)
-  (action (run ../src/compiler/main.exe %{deps} -o %{targets})))
+  (action (run %{bin:avro-compiler} %{deps} -o %{targets})))
 
 (executable
   (name employee_test)

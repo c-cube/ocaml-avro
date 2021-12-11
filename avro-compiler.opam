@@ -4,6 +4,7 @@ version: "0.1"
 synopsis: "Schema compiler for Avro"
 maintainer: ["Simon Cruanes"]
 authors: ["Simon Cruanes"]
+license: "MIT"
 homepage: "https://github.com/c-cube/ocaml-avro"
 bug-reports: "https://github.com/c-cube/ocaml-avro/issues/"
 depends: [
@@ -26,3 +27,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+dev-repo: "git+https://github.com/c-cube/ocaml-avro.git"

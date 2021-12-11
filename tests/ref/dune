@@ -2,7 +2,7 @@
 (rule
   (targets user.ml)
   (deps user.avsc)
-  (action (run ../../src/compiler/main.exe %{deps} -o %{targets})))
+  (action (run %{bin:avro-compiler} %{deps} -o %{targets})))
 
 (executable
   (name read)
@@ -15,4 +15,5 @@
 
 (rule
   (alias runtest)
+  (package avro)
   (action (diff test.expected test.out)))
