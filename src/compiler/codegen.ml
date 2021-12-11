@@ -267,7 +267,6 @@ let rec gen_rec
                fpf out "C_%d %t@]@" i read
           )
           l;
-        fpf out "| _ -> failwith \"bad index\"";
         fpf out "@])";
       and write out =
         fpf out "(@[<v>match self with@ ";
