@@ -1,0 +1,18 @@
+
+(rule
+  (targets user.ml)
+  (deps user.avsc)
+  (action (run ../../src/compiler/main.exe %{deps} -o %{targets})))
+
+(executable
+  (name read)
+  (libraries avro))
+
+(rule
+  (targets test.out)
+  (deps users.avro)
+  (action (with-stdout-to %{targets} (run ./read.exe %{deps}))))
+
+(rule
+  (alias runtest)
+  (action (diff test.expected test.out)))
