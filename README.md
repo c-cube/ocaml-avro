@@ -39,3 +39,12 @@ See some examples from the `tests/` directory:
 ## License 
 
 MIT license.
+
+
+## Perf analysis
+
+on branch `feat-tracy`, with `tracy-client` installed:
+
+- run tracy in the background, click "connect"
+- `make perfs; and ./employee_test.exe`
+

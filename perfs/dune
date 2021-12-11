@@ -1,0 +1,16 @@
+
+(rule
+  (targets employee.ml)
+  (deps employee.json)
+  (action (run ../src/compiler/main.exe %{deps} -o %{targets})))
+
+(executable
+  (name employee_test)
+  (modules employee_test employee)
+  (libraries avro tracy tracy-client))
+
+(env
+  (_ (flags :standard -warn-error -a)
+     (ocamlopt_flags :standard -O3 -color always -unbox-closures -unbox-closures-factor 20)
+     ))
+
