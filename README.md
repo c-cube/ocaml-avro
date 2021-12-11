@@ -48,3 +48,6 @@ on branch `feat-tracy`, with `tracy-client` installed:
 - run tracy in the background, click "connect"
 - `make perfs; and ./employee_test.exe`
 
+On my machine, a thinkpad (AMD Ryzen 7 PRO 3700U with 6020216 kB RAM, and a SSD),
+I get `./employee_test.exe` to run in 4.7s to serialize 2M records using "deflate",
+then read them back from disk. 2.05s are spent in writing, 2.64s in reading.
