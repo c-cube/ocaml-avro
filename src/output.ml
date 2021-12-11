@@ -6,7 +6,11 @@ module type S = sig
   val flush : unit -> unit
 end
 
+module type CUSTOM = S
+
 type t = (module S)
+
+let of_custom x = x
 
 let of_buffer (buf:Buffer.t) : t =
   let module M = struct

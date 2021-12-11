@@ -2,8 +2,10 @@
 (** The object container file storage format
 
     This format is used to store a collection of {b rows} which have
-    the same type, using an efficient binary encoding. *)
+    the same type, using an efficient binary encoding and optional compression.
+*)
 
+(** Compression codecs for data blocks *)
 module Codec : sig
   type t
 
@@ -31,7 +33,7 @@ module Codec : sig
     unit -> unit
 end
 
-(** Reading from an input *)
+(** Decoding multiple rows from an input *)
 module Decode : sig
   type 'a t
   (** Decoder for values of type ['a] *)
@@ -49,6 +51,8 @@ module Decode : sig
   val next : 'a t -> 'a option
   (** Read next row *)
 
+  (** {2 High level API} *)
+
   val iter : 'a t -> f:('a -> unit) -> unit
 
   val fold : 'a t -> f:('b -> 'a -> 'b) -> init:'b -> 'b
@@ -60,19 +64,25 @@ module Decode : sig
   val to_array : 'a t -> 'a array
 end
 
+(** Encoding multiple rows to an output *)
 module Encode : sig
+  (** Encoder *)
   type 'a t
 
   exception Closed
 
-  val make :
+  type 'a with_params =
     ?max_block_count:int ->
     ?buf_size:int ->
     ?pool:Iobuf.Pool.t ->
     ?codec:Codec.t ->
-    Output.t ->
-    schema:string ->
-    write:(Output.t -> 'a -> unit) -> 'a t
+    'a
+
+  val make :
+    (Output.t ->
+     schema:string ->
+     write:(Output.t -> 'a -> unit) -> 'a t)
+    with_params
   (** make a new encoder.
       @param write the row type writer
       @param schema the json schema
@@ -80,7 +90,6 @@ module Encode : sig
       @param buf_size size of buffers if [pool] is not provided
       @param max_block_count forces a flush whenever there are that many elements
       in the current block. *)
-  (* TODO: parameter for codec *)
 
   val push : 'a t -> 'a -> unit
   (** [push enc x] pushes a row into [enc].
@@ -95,4 +104,18 @@ module Encode : sig
   val close : _ t -> unit
   (** [close enc] flushes the last block, if any, and renders the encoder
       unusable. *)
+
+  (** {2 High level API} *)
+
+  val write_seq :
+    (schema:string ->
+     write:(Output.t -> 'a -> unit) ->
+     Output.t -> 'a Seq.t -> unit) with_params
+  (** Encode the given sequence of rows into the output. *)
+
+  val write_seq_to_string :
+    (schema:string ->
+     write:(Output.t -> 'a -> unit) ->
+     'a Seq.t -> string) with_params
+  (** Encode the given sequence of rows into a string *)
 end

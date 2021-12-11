@@ -4,8 +4,11 @@ module type S = sig
   val read_byte : unit -> char
   val read_exact : bytes -> int -> int -> unit
 end
+module type CUSTOM = S
 
 type t = (module S)
+
+let of_custom x = x
 
 let of_string str : t =
   let i = ref 0 in
@@ -63,6 +66,17 @@ let of_chan ic : t =
     let read_byte = read_byte
     let read_exact = read_exact
   end in (module M)
+
+let with_file ?(flags=[Open_binary;  Open_rdonly]) file f =
+  let ic = open_in_gen flags 0o000 file in
+  let input = of_chan ic in
+  try
+    let x = f input in
+    close_in ic;
+    x
+  with e ->
+    close_in_noerr ic;
+    raise e
 
 let[@inline] read_byte (module B:S) = B.read_byte()
 let[@inline] read_exact (module B:S) buf off len = B.read_exact buf off len

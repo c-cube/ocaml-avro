@@ -181,6 +181,13 @@ module Decode = struct
 end
 
 module Encode = struct
+  type 'a with_params =
+    ?max_block_count:int ->
+    ?buf_size:int ->
+    ?pool:Iobuf.Pool.t ->
+    ?codec:Codec.t ->
+    'a
+
   type 'a t = {
     out: Output.t;
     write: Output.t -> 'a -> unit;
@@ -307,5 +314,25 @@ module Encode = struct
       if self.block_count > 0 then flush_block_ self;
       self.closed <- true;
     )
+
+  let write_seq
+      ?max_block_count ?buf_size ?pool ?codec
+      ~schema ~write out seq : unit =
+    let self =
+      make ?max_block_count ?buf_size ?pool ?codec
+        ~schema ~write out
+    in
+    Seq.iter (push self) seq;
+    close self
+
+  let write_seq_to_string
+      ?max_block_count ?buf_size ?pool ?codec
+      ~schema ~write seq : string =
+    let buf = Buffer.create 1_024 in
+    let out = Output.of_buffer buf in
+    write_seq
+      ?max_block_count ?buf_size ?pool ?codec
+      ~schema ~write out seq;
+    Buffer.contents buf
 end
 

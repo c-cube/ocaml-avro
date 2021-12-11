@@ -12,6 +12,30 @@ val of_string_compressed_deflate : string -> t
     This will handle the decompression. *)
 
 val of_chan : in_channel -> t
+(** Input that reads from the given channel. *)
+
+val with_file :
+  ?flags:open_flag list ->
+  string -> (t -> 'a) -> 'a
+(** Opens file, call the function with an input feeding from the file,
+    and makes sure to cleanup before returning the function's result. *)
+
+(** Custom inputs *)
+module type CUSTOM = sig
+  val small_buf8 : bytes
+  (** A small buffer, used in various places *)
+
+  val read_byte : unit -> char
+  (** Read a single byte
+      @raise End_of_file if input is exhausted *)
+
+  val read_exact : bytes -> int -> int -> unit
+  (** [read_exact buf i len] reads [len] bytes into [buf], starting at offset [i]
+      @raise End_of_file if input has less than [len] bytes *)
+end
+
+val of_custom : (module CUSTOM) -> t
+(** User defined input *)
 
 val read_byte : t -> char
 (** [read_byte i] returns the next char, or raises
