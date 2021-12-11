@@ -22,18 +22,13 @@ let ptext out s =
 module Code = struct
   type t =
     | Top of string
-    | Mod of string * t list
 
   let to_string (l:t list) : string =
-    let rec pp out l =
+    let pp out l =
       List.iteri (fun i s ->
           if i>0 then fpf out "@ @ ";
           match s with
           | Top s -> fpf out "@[%a@]" ptext s
-          | Mod (name,l) ->
-            Format.fprintf out "@[<v2>module %s = struct@ " name ;
-            pp out l;
-            Format.fprintf out "@ end@]@ ";
         )
         l;
     in
@@ -41,8 +36,6 @@ module Code = struct
 
   let s str : t = Top str
   let sf fmt = Format.kasprintf s fmt
-
-  let mod_ m l : t = Mod (m, l)
 end
 
 type state = {
@@ -141,7 +134,7 @@ let rec gen_rec
     let ty_decl, ty_read, ty_write = recurse ty in
     let ty out = fpf out "@[%t@ Str_map.t@]" ty_decl in
     let read out =
-      fpf out "(@[<v>let readv self = %t in@ \
+      fpf out "(@[<v>let readv input = %t in@ \
                Input.read_map readv input@])"
         ty_read
     and write out =
@@ -258,6 +251,7 @@ let rec gen_rec
                fpf out "C_%d %t@]@" i read
           )
           l;
+        fpf out "| _ -> failwith \"bad index\"";
         fpf out "@])";
       and write out =
         fpf out "(@[<v>match self with@ ";
@@ -274,7 +268,6 @@ let rec gen_rec
              | Sc.Union _ -> failwith "nested union";
           )
           l;
-        fpf out "| _ -> failwith \"bad index\"";
         fpf out "@])";
       in
       ty, read, write
@@ -293,7 +286,7 @@ let rec gen_rec
       ty, read, write
     )
 
-  | Sc.Fixed { name; size; doc; namespace=_ } ->
+  | Sc.Fixed { name=_; size; doc; namespace=_ } ->
     let ty out = pstr out "string"; ppdoc out doc;
     and read out =
       fpf out "Input.read_string_of_len input %d" size

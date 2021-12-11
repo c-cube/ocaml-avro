@@ -7,7 +7,7 @@ let schema = "{\"type\":\"map\",\"values\":\"bytes\"}"
 type nonrec t = string Str_map.t
 
 let read (input:Input.t) : t =
-  (let readv self = Input.read_string input in
+  (let readv input = Input.read_string input in
    Input.read_map readv input)
 
 let write (out:Output.t) (self:t) : unit =

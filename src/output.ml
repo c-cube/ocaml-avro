@@ -130,10 +130,6 @@ let write_float64 (self:t) (f:float) =
   Bytes.set_int64_le O.small_buf8 0 i;
   write_slice self O.small_buf8 0 8
 
-let data_of ~size self x =
-  if size <> Bytes.length x then failwith "invalid length for Encode.data_of";
-  Buffer.add_bytes self x
-
 let write_string self s =
   write_int self (String.length s);
   write_slice self (Bytes.unsafe_of_string s) 0 (String.length s)
