@@ -57,6 +57,7 @@ let of_chan ic : t =
       if Iobuf.len iobuf = 0 then refill iobuf;
       let len' = min len (Iobuf.len iobuf) in
       Bytes.blit iobuf.b iobuf.i buf off len';
+      Iobuf.consume iobuf len';
       read_exact buf (off+len') (len-len')
     )
   in
