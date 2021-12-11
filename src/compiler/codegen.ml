@@ -126,13 +126,14 @@ let rec gen_rec
       fpf out "@[%t@ array@]" ty_decl
     and read out =
       fpf out
-        "(@[<v>let len = Input.read_int input in@ \
-         @[<2>Array.init len@ \
-         (@[fun _ ->@ %t@])@]@])" ty_read
+        "(@[<v>@[<2>let readv input =@ %t@] in@ \
+         Input.read_array readv input@])"
+        ty_read
     and write out =
       fpf out
-        "(@[<v>Output.write_int out (Array.length self);@ \
-         @[<2>Array.iter (@[fun self ->@ %t@]) self@]@])" ty_write
+        "(@[<v>@[<2>let writev out self =@ %t@] in@ \
+         Output.write_array writev out self@])"
+        ty_write
     in
     ty, read, write
 
@@ -140,23 +141,13 @@ let rec gen_rec
     let ty_decl, ty_read, ty_write = recurse ty in
     let ty out = fpf out "@[%t@ Str_map.t@]" ty_decl in
     let read out =
-      fpf out
-        "(@[<v>\
-         let len = Input.read_int input in@ \
-         @[<2>let arr =@ Array.init len@ \
-         (@[fun _ ->@ \
-         let k = Input.read_string input in@ \
-         let v = %t in@ \
-         k, v@]) in@]@ \
-         Array.fold_left (fun m (k,v) -> Str_map.add k v m) Str_map.empty arr@])"
-        ty_read;
+      fpf out "(@[<v>let readv self = %t in@ \
+               Input.read_map readv input@])"
+        ty_read
     and write out =
       fpf out
-        "(@[<v>\
-         Output.write_int out (Str_map.cardinal self);@ \
-         @[<2>Str_map.iter@ (@[fun k self ->@ \
-         Output.write_string out k;@ \
-         %t@]) self@]@])"
+        "(@[<v>let writev out self = %t in@
+        Output.write_map writev out self@])"
         ty_write;
     in
     ty, read, write

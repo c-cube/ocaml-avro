@@ -140,3 +140,31 @@ let read_float32 (self:t) : float =
 let read_string (self:t) : string =
   let len = read_int self in
   read_string_of_len self len
+
+let read_array readx self : _ array =
+  let[@unroll 1] rec loop prev =
+    let len = read_int self in
+    if len=0 then prev
+    else (
+      let arr = Array.init len (fun _ -> readx self) in
+      let arr2 = if prev=[||] then arr else Array.append prev arr in
+      loop arr2
+    )
+  in
+  loop [||]
+
+let read_map readv self : _ Map.Make(String).t =
+  let module M = Map.Make(String) in
+  let[@unroll 1] rec loop m =
+    let len = read_int self in
+    if len=0 then !m
+    else (
+      for _i = 1 to len do
+        let k = read_string self in
+        let v = readv self in
+        m := M.add k v !m
+      done;
+      loop m
+    )
+  in
+  loop (ref M.empty)

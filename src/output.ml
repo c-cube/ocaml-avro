@@ -141,3 +141,14 @@ let write_string self s =
 let write_string_of_len self len s =
   if String.length s <> len then failwith "write_string_of_len: wrong length";
   write_slice self (Bytes.unsafe_of_string s) 0 (String.length s)
+
+let write_array writex self arr =
+  write_int self (Array.length arr);
+  Array.iter (writex self) arr;
+  write_int self 0
+
+let write_map writev self m : unit =
+  let module M = Map.Make(String) in
+  write_int self (M.cardinal m);
+  M.iter (fun k v -> write_string self k; writev self v) m;
+  write_int self 0

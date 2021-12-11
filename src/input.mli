@@ -62,3 +62,7 @@ val read_float64 : t -> float
 
 val read_string : t -> string
 (** Read length-prefixed string *)
+
+val read_array : (t -> 'a) -> t -> 'a array
+
+val read_map : (t -> 'a) -> t -> 'a Map.Make(String).t

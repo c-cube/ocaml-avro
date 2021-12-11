@@ -61,6 +61,8 @@ val write_float32 : t -> float -> unit
 val write_float64 : t -> float -> unit
 val write_string : t -> string -> unit
 val write_string_of_len : t -> int -> string -> unit
+val write_array : (t -> 'a -> unit) -> t -> 'a array -> unit
+val write_map : (t -> 'a -> unit) -> t -> 'a Map.Make(String).t -> unit
 
 val flush : t -> unit
 (** Hint to flush underlying buffer/channel/socket. *)
