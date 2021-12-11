@@ -1,5 +1,10 @@
 (lang dune 2.0)
 (generate_opam_files true)
+(version 0.1)
+(maintainers "Simon Cruanes")
+(authors "Simon Cruanes")
+(bug_reports "https://github.com/c-cube/ocaml-avro/issues/")
+(homepage "https://github.com/c-cube/ocaml-avro")
 
 
 (package
