@@ -11,6 +11,9 @@ The online documentation can be found [here](https://c-cube.github.io/ocaml-avro
 - [x] code generation from json schema (using `avro-compiler`)
   * **NOTE**: default values are not supported yet.
 - [x] binary encoding
+- [ ] schema evolution
+  (in particular the schema is emitted as-is, nothing is stripped)
+- [ ] sorting
 - [ ] json encoding
 - codecs:
   * [x] null
