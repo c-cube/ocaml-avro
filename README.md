@@ -6,6 +6,19 @@
 
 The online documentation can be found [here](https://c-cube.github.io/ocaml-avro/)
 
+## Supported features
+
+- [x] code generation from json schema (using `avro-compiler`)
+  * **NOTE**: default values are not supported yet.
+- [x] binary encoding
+- [ ] json encoding
+- codecs:
+  * [x] null
+  * [x] deflate
+  * [ ] snappy
+
+## Examples
+
 See some examples from the `tests/` directory:
 
 - `tests/records.json` and `tests/records_test.ml` that use it.
