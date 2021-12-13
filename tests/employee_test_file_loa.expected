@@ -1,0 +1,3 @@
+write to file "employees.avro"
+reading back from file "employees.avro" into list-of-arrays…
+read back 2000000 rows

@@ -102,11 +102,7 @@
   (action
     (with-stdout-to
       %{targets}
-      (setenv
-        "CODEC" "deflate"
-        (setenv
-          "N" "1_000_000"
-          (run ./employee_test.exe))))))
+      (run ./employee_test.exe -n 1_000_000 --codec=deflate))))
 
 (rule
   (alias runtest)
@@ -120,18 +116,27 @@
   (action
     (with-stdout-to
       %{targets}
-      (setenv
-        "OUT" "employees.avro"
-        (setenv
-          "CODEC" "deflate"
-          (setenv
-            "N" "1_000_000"
-            (run ./employee_test.exe)))))))
+      (run ./employee_test.exe -o employees.avro -n 1_000_000 --codec=deflate))))
 
 (rule
   (alias runtest)
   (package avro)
   (action (diff employee_test_file.expected employee_test_file.out)))
+
+(rule
+  (targets employee_test_file_loa.out)
+  (locks /thash)
+  (package avro)
+  (action
+    (with-stdout-to
+      %{targets}
+      (run ./employee_test.exe -o employees.avro
+           -n 1_000_000 --list-of-array --codec=deflate))))
+
+(rule
+  (alias runtest)
+  (package avro)
+  (action (diff employee_test_file_loa.expected employee_test_file_loa.out)))
 
 (env
   (_ (flags :standard -warn-error -a)))
