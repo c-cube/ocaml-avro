@@ -4,6 +4,8 @@
 - `avro` is the runtime library, should be reasonably small (depends only on `camlzip`)
 - `avro-compiler` can read a json schema and generate code from it
 
+The online documentation can be found [here](https://c-cube.github.io/ocaml-avro/)
+
 See some examples from the `tests/` directory:
 
 - `tests/records.json` and `tests/records_test.ml` that use it.
