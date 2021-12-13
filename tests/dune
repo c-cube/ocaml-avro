@@ -93,10 +93,10 @@
 (executable
   (name employee_test)
   (modules employee_test employee)
-  (libraries avro))
+  (libraries avro unix))
 
 (rule
-  (targets employee_test.out)
+  (targets employee_test_str.out)
   (locks /thash)
   (package avro)
   (action
@@ -111,7 +111,27 @@
 (rule
   (alias runtest)
   (package avro)
-  (action (diff employee_test.expected employee_test.out)))
+  (action (diff employee_test_str.expected employee_test_str.out)))
+
+(rule
+  (targets employee_test_file.out)
+  (locks /thash)
+  (package avro)
+  (action
+    (with-stdout-to
+      %{targets}
+      (setenv
+        "OUT" "employees.avro"
+        (setenv
+          "CODEC" "deflate"
+          (setenv
+            "N" "1_000_000"
+            (run ./employee_test.exe)))))))
+
+(rule
+  (alias runtest)
+  (package avro)
+  (action (diff employee_test_file.expected employee_test_file.out)))
 
 (env
   (_ (flags :standard -warn-error -a)))
