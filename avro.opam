@@ -8,14 +8,14 @@ license: "MIT"
 homepage: "https://github.com/c-cube/ocaml-avro"
 bug-reports: "https://github.com/c-cube/ocaml-avro/issues/"
 depends: [
-  "dune" {>= "2.0"}
+  "dune" {>= "2.7" & >= "2.0"}
   "odoc" {with-doc}
   "avro-compiler" {with-test}
   "ocaml" {>= "4.08.0"}
   "camlzip"
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
