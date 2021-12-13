@@ -161,6 +161,24 @@ module Decode = struct
   let[@inline] next self =
     if self.is_done then None else next_ self
 
+  let to_array_list self : _ array list =
+    let rec loop acc =
+      if self.is_done then List.rev acc
+      else if self.block_remaining_count = 0 then (
+        (* read next block and try again from it *)
+        next_block_ self;
+        loop acc
+      ) else (
+        (* read many items at once *)
+        let arr =
+          Array.init self.block_remaining_count
+            (fun _ -> self.row self.block_input)
+        in
+        self.block_remaining_count <- 0;
+        loop (arr :: acc)
+      )
+    in loop []
+
   let rec to_seq self () =
     match next self with
     | None -> Seq.Nil

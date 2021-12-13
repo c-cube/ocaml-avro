@@ -54,10 +54,21 @@ module Decode : sig
   (** {2 High level API} *)
 
   val iter : 'a t -> f:('a -> unit) -> unit
+  (** Iterate on the elements. Can be done only once. *)
 
   val fold : 'a t -> f:('b -> 'a -> 'b) -> init:'b -> 'b
+  (** Fold on the elements. Can be done only once. *)
 
   val to_seq : 'a t -> 'a Seq.t
+  (** Obtain an ephemeral sequence of elements, that can be traversed
+      only once. *)
+
+  val to_array_list : 'a t -> 'a array list
+  (** Obtain a list of arrays. Each array corresponds to a block of the
+      input file.
+      This is the most efficient way to get the whole file's content in
+      memory in a stable form (unlike {!to_seq} which is ephemeral).
+      @since 0.2 *)
 
   val to_list : 'a t -> 'a list
 
