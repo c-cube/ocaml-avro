@@ -67,14 +67,14 @@ let decode_from (input:Avro.Input.t) : int =
 let test_str_read (str:string ) : unit =
   Printf.printf "reading back from string…\n%!";
   let n = decode_from (Avro.Input.of_string str) in
-  Printf.printf "read back %d rows\n" n;
+  Printf.printf "read back %d rows\n%!" n;
   ()
 
 let test_file_read file : unit =
   Printf.printf "reading back from file %S…\n%!" file;
   Avro.Input.with_file file @@ fun input ->
   let n = decode_from input in
-  Printf.printf "read back %d rows\n" n;
+  Printf.printf "read back %d rows\n%!" n;
   ()
 
 let () =
@@ -88,7 +88,7 @@ let () =
       let str = test_str ~codec_name ~n () in
       test_str_read str;
     | Some file ->
-      Printf.printf "write to file %S\n" file;
+      Printf.printf "write to file %S\n%!" file;
       test_file ~codec_name ~n file;
       test_file_read file;
   end;
