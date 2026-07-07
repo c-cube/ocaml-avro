@@ -46,6 +46,33 @@ module Codec = struct
     ignore (register ~name ~compress ~decompress () : t)
 end
 
+(** to generate sync markers; protected by [rand_mutex_] *)
+let rand_state_ : Random.State.t option ref = ref None
+let rand_mutex_ = Mutex.create ()
+
+let marker_of_state_ (st:Random.State.t) : string =
+  let b = Bytes.create 16 in
+  Bytes.set_int64_le b 0 (Random.State.bits64 st);
+  Bytes.set_int64_le b 8 (Random.State.bits64 st);
+  Bytes.unsafe_to_string b
+
+let random_sync_marker_ ?seed () : string =
+  match seed with
+  | Some seed ->
+    (* deterministic, for tests: no need for the shared state or the mutex *)
+    marker_of_state_ (Random.State.make [| seed |])
+  | None ->
+    Mutex.lock rand_mutex_;
+    Fun.protect ~finally:(fun () -> Mutex.unlock rand_mutex_) @@ fun () ->
+    let st = match !rand_state_ with
+      | Some st -> st
+      | None ->
+        let st = Random.State.make_self_init () in
+        rand_state_ := Some st;
+        st
+    in
+    marker_of_state_ st
+
 module Decode = struct
   type 'a t = {
     input: Input.t;
@@ -204,6 +231,8 @@ module Encode = struct
     ?buf_size:int ->
     ?pool:Iobuf.Pool.t ->
     ?codec:Codec.t ->
+    ?sync_marker:string ->
+    ?seed:int ->
     'a
 
   type 'a t = {
@@ -237,6 +266,7 @@ module Encode = struct
 
   let make
       ?(max_block_count=50_000) ?(buf_size=16 * 1024) ?pool ?(codec=Codec.null)
+      ?sync_marker ?seed
       out ~schema ~write : _ t =
     let max_block_count = max 100 (min max_block_count 50_000) in
     let buf_size = max 128 buf_size in
@@ -245,9 +275,12 @@ module Encode = struct
       | Some p -> p
     in
 
-    let sync_marker =
-      let s = "syncmeup" in
-      s ^ s
+    let sync_marker = match sync_marker with
+      | Some s ->
+        if String.length s <> 16 then
+          invalid_arg "Obj_container_file.Encode.make: sync_marker must be 16 bytes";
+        s
+      | None -> random_sync_marker_ ?seed ()
     in
 
     (* writing blocks doesn't go directly into [out], we need
@@ -334,22 +367,22 @@ module Encode = struct
     )
 
   let write_seq
-      ?max_block_count ?buf_size ?pool ?codec
+      ?max_block_count ?buf_size ?pool ?codec ?sync_marker ?seed
       ~schema ~write out seq : unit =
     let self =
-      make ?max_block_count ?buf_size ?pool ?codec
+      make ?max_block_count ?buf_size ?pool ?codec ?sync_marker ?seed
         ~schema ~write out
     in
     Seq.iter (push self) seq;
     close self
 
   let write_seq_to_string
-      ?max_block_count ?buf_size ?pool ?codec
+      ?max_block_count ?buf_size ?pool ?codec ?sync_marker ?seed
       ~schema ~write seq : string =
     let buf = Buffer.create 1_024 in
     let out = Output.of_buffer buf in
     write_seq
-      ?max_block_count ?buf_size ?pool ?codec
+      ?max_block_count ?buf_size ?pool ?codec ?sync_marker ?seed
       ~schema ~write out seq;
     Buffer.contents buf
 end

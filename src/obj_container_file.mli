@@ -87,6 +87,8 @@ module Encode : sig
     ?buf_size:int ->
     ?pool:Iobuf.Pool.t ->
     ?codec:Codec.t ->
+    ?sync_marker:string ->
+    ?seed:int ->
     'a
 
   val make :
@@ -100,7 +102,12 @@ module Encode : sig
       @param pool pool of buffers to use internally
       @param buf_size size of buffers if [pool] is not provided
       @param max_block_count forces a flush whenever there are that many elements
-      in the current block. *)
+      in the current block.
+      @param sync_marker the exact 16-byte sync marker to embed in the file.
+        Default is a random value.
+      @param seed if given and [sync_marker=None], use this to initialize a
+        random generator to produce the sync marker.
+      @raise Invalid_argument if the given marker isn't 16 bytes long. *)
 
   val push : 'a t -> 'a -> unit
   (** [push enc x] pushes a row into [enc].

@@ -1,6 +1,6 @@
 (library
  (name avro)
- (libraries zip)
+ (libraries zip threads.posix)
  (public_name avro))
 
 (rule
