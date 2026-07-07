@@ -78,19 +78,19 @@ let decode_from ~decode_into (input:Avro.Input.t) : int =
     let l = to_array_list dec in
     List.fold_left (fun n a -> n + Array.length a) 0 l
 
-let test_str_read ~decode_into (str:string ) : unit =
+let test_str_read ~decode_into ~n_expected (str:string ) : unit =
   Printf.printf "reading back from string into %s…\n%!" (string_of_dec_into decode_into);
   let n = decode_from ~decode_into (Avro.Input.of_string str) in
   Printf.printf "read back %d rows\n%!" n;
-  ()
+  assert (n = n_expected)
 
-let test_file_read ~decode_into file : unit =
+let test_file_read ~decode_into ~n_expected file : unit =
   Printf.printf "reading back from file %S into %s…\n%!"
     file (string_of_dec_into decode_into);
   Avro.Input.with_file file @@ fun input ->
   let n = decode_from ~decode_into input in
   Printf.printf "read back %d rows\n%!" n;
-  ()
+  assert (n = n_expected)
 
 let () =
   Printexc.record_backtrace true;
@@ -114,11 +114,11 @@ let () =
   begin match !out with
     | "" ->
       let str = test_str ~codec_name ~n () in
-      test_str_read ~decode_into str;
+      test_str_read ~decode_into ~n_expected:(2*n) str;
     | file ->
       Printf.printf "write to file %S\n%!" file;
       test_file ~codec_name ~n file;
-      test_file_read ~decode_into file;
+      test_file_read ~decode_into ~n_expected:(2*n) file;
   end;
   ()
 

@@ -45,5 +45,10 @@ let () =
   in
 
   Printf.printf "read back %d rows\n" (List.length rows);
+  assert (List.length rows = n);
+  List.iteri (fun i (r:R.t) ->
+      assert (r.a = Int64.of_int (i+1));
+      assert (r.b = "foo_" ^ string_of_int (i+1)))
+    rows;
   ()
 

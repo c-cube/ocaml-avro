@@ -63,27 +63,15 @@
   (action (diff records_hash.expected records_hash)))
 
 (rule
-  (targets records_hash_deflate)
+  (alias runtest)
   (locks /thash)
   (package avro)
   (action
-    (progn
+    (setenv
+      "CODEC" "deflate"
       (setenv
-        "CODEC" "deflate"
-        (setenv
-          "N" "100_000"
-          (setenv
-            "OUT" "tmp.data"
-            (run ./records_test.exe))))
-      (with-stdout-to %{targets}
-                      (run sha256sum "tmp.data")))))
-
-
-(rule
-  (alias runtest)
-  (deps records_hash)
-  (package avro)
-  (action (diff records_hash_deflate.expected records_hash_deflate)))
+        "N" "100_000"
+        (run ./records_test.exe)))))
 
 (rule
   (targets employee.ml)
@@ -102,10 +90,11 @@
   (action
     (with-stdout-to
       %{targets}
-      (run ./employee_test.exe -n 1_000_000 --codec=deflate))))
+      (run ./employee_test.exe -n 1_000_000 --codec=null))))
 
 (rule
   (alias runtest)
+  (deps employee_test_str.out)
   (package avro)
   (action (diff employee_test_str.expected employee_test_str.out)))
 
@@ -116,10 +105,11 @@
   (action
     (with-stdout-to
       %{targets}
-      (run ./employee_test.exe -o employees.avro -n 1_000_000 --codec=deflate))))
+      (run ./employee_test.exe -o employees.avro -n 1_000_000 --codec=null))))
 
 (rule
   (alias runtest)
+  (deps employee_test_file.out)
   (package avro)
   (action (diff employee_test_file.expected employee_test_file.out)))
 
@@ -131,12 +121,32 @@
     (with-stdout-to
       %{targets}
       (run ./employee_test.exe -o employees.avro
-           -n 1_000_000 --list-of-array --codec=deflate))))
+           -n 1_000_000 --list-of-array --codec=null))))
 
 (rule
   (alias runtest)
+  (deps employee_test_file_loa.out)
   (package avro)
   (action (diff employee_test_file_loa.expected employee_test_file_loa.out)))
+
+(rule
+  (alias runtest)
+  (locks /thash)
+  (package avro)
+  (action (run ./employee_test.exe -n 1_000_000 --codec=deflate)))
+
+(rule
+  (alias runtest)
+  (locks /thash)
+  (package avro)
+  (action (run ./employee_test.exe -o employees.avro -n 1_000_000 --codec=deflate)))
+
+(rule
+  (alias runtest)
+  (locks /thash)
+  (package avro)
+  (action (run ./employee_test.exe -o employees.avro
+           -n 1_000_000 --list-of-array --codec=deflate)))
 
 (env
   (_ (flags :standard -warn-error -a)))
