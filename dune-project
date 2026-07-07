@@ -17,7 +17,7 @@
     (dune (>= 2.0))
     (odoc :with-doc)
     (avro-compiler :with-test)
-    (ocaml (>= 4.08.0))
+    (ocaml (>= 4.14.0))
     camlzip))
 
 (package
@@ -25,6 +25,6 @@
   (synopsis "Schema compiler for Avro")
   (depends
     (dune (>= 2.0))
-    (ocaml (>= 4.08.0))
+    (ocaml (>= 4.14.0))
     (odoc :with-doc)
     (yojson (>= 1.6))))
