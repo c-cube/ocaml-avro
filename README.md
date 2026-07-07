@@ -1,5 +1,7 @@
 
-# Avro [![build](https://github.com/c-cube/ocaml-avro/actions/workflows/main.yml/badge.svg)](https://github.com/c-cube/ocaml-avro/actions/workflows/main.yml)
+# Avro
+
+**NOTE**: it might be better to use [avro-simple](https://github.com/tmcgilchrist/avro-simple) today.
 
 - `avro` is the runtime library, should be reasonably small (depends only on `camlzip`)
 - `avro-compiler` can read a json schema and generate code from it
