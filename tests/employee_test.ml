@@ -25,7 +25,8 @@ let encode_to_out ~codec_name ~n (out:Avro.Output.t) =
     with Not_found -> failwith "unknown codec"
   in
   let enc =
-    Encode.make out ~max_block_count:500 ~codec ~write:E.write ~schema:E.schema in
+    Encode.make out ~max_block_count:500 ~codec ~write:E.write ~schema:E.schema
+      ~seed:17 in
 
   let langs = [|E.Cpp; E.Ocaml; E.Java; E.Python|] in
   for i=1 to n do

@@ -14,7 +14,9 @@ let () =
         try Codec.find_by_name_exn codec_name
         with Not_found -> failwith "unknown codec"
       in
-    let enc = make out ~max_block_count:500 ~codec ~write:R.write ~schema:R.schema in
+    let enc =
+      make out ~max_block_count:500 ~codec ~write:R.write ~schema:R.schema
+        ~seed:42 in
     for i=1 to n do
       push enc {R.a=Int64.of_int i; b="foo_"^string_of_int i}
     done;
