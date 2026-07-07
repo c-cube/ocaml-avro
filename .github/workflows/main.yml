@@ -20,6 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: opam pin -n .
-      - run: opam install -t . --deps-only
+      - run: apt update && opam install -t . --deps-only
       - run: opam exec -- dune build --ignore-promoted-rules
       - run: opam exec -- dune runtest --ignore-promoted-rules
